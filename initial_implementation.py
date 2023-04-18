@@ -90,6 +90,6 @@ for i, (train_index, test_index) in enumerate(rkf.split(X, y)):
         score[i][j] = accuracy_score(y_test, prediction)
 
 np.save('results.npy', score)
-print(tabulate([['Mean score', '{:.1%}'.format(np.mean(score[:,0])), '{:.1%}'.format(np.mean(score[:,1])), '{:.1%}'.format(np.mean(score[:,2])), '{:.1%}'.format(np.mean(score[:,3])), '{:.1%}'.format(np.mean(score[:,4]))], ['Deviation score', '{:.1%}'.format(np.std(score[:,0])), '{:.1%}'.format(np.std(score[:,1])), '{:.1%}'.format(np.std(score[:,2])), '{:.1%}'.format(np.std(score[:,3])), '{:.1%}'.format(np.std(score[:,4]))]], headers=[' ', 'AdaBoost 50xkNN', 'AdaBoost 100xkNN', 'Random Forest', 'GradientBoosting', 'Bagging (with kNN)']))
+print(tabulate([['Mean score', '{:.1%}'.format(np.mean(score[:,0])), '{:.1%}'.format(np.mean(score[:,1])), '{:.1%}'.format(np.mean(score[:,2])), '{:.1%}'.format(np.mean(score[:,3])), '{:.1%}'.format(np.mean(score[:,4]))], ['Deviation score', '{:.1%}'.format(np.std(score[:,0])), '{:.1%}'.format(np.std(score[:,1])), '{:.1%}'.format(np.std(score[:,2])), '{:.1%}'.format(np.std(score[:,3])), '{:.1%}'.format(np.std(score[:,4]))]], headers=[' ', 'AdaBoost 50xDecisionTrees', 'AdaBoost 100xDecisionTrees', 'Random Forest', 'GradientBoosting', 'Bagging (with DecisionTrees)']))
 
 #print('The scikit-learn version is {}.'.format(sklearn.__version__))
