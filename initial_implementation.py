@@ -1,5 +1,6 @@
 import numpy as np
 import sklearn
+import csv
 
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.datasets import make_classification
@@ -57,7 +58,18 @@ class AdaBoostClassifier:
         
         return self.classes[np.argmax(y,axis=1)]
     
-X,y = make_classification(n_samples=200, n_classes = 4, n_features=8, n_informative=8, n_redundant=0, n_repeated=0)
+X = np.empty((0, 7), int)
+y = np.empty((0, 1), int)
+    
+with open(r"C:\Users\Admin\Downloads\wifi_localization_csv.txt") as f:
+    reader = csv.reader(f, delimiter=';')
+    for row in reader:
+        X = np.append(X, np.array([[int(row[0]), int(row[1]), int(row[2]), int(row[3]), int(row[4]), int(row[5]), int(row[6])]]), axis=0)
+        y = np.append(y, int(row[7]))
+
+#print(X)
+#print(y)
+
 
 rkf = RepeatedKFold(n_repeats=5, n_splits=2, random_state=1)
 score = []
@@ -73,4 +85,4 @@ for i, (train_index, test_index) in enumerate(rkf.split(X, y)):
 print('Mean score: {:.1%}'.format(np.mean(score)))
 
 print('Deviation score: {:.1%}'.format(np.std(score)))
-print('The scikit-learn version is {}.'.format(sklearn.__version__))
+#print('The scikit-learn version is {}.'.format(sklearn.__version__))
