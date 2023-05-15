@@ -10,6 +10,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.ensemble import BaggingClassifier
 from tabulate import tabulate
+from scipy import stats
 
 class AdaBoostClassifier:
     
@@ -79,17 +80,61 @@ clf100 = AdaBoostClassifier(n_estimators=100)
 RFclf = RandomForestClassifier(max_depth=2, random_state=0)
 GBclf = GradientBoostingClassifier(n_estimators=100, learning_rate=1.0, max_depth=1, random_state=0)
 BGclf = BaggingClassifier(estimator=DecisionTreeClassifier(max_depth=1), n_estimators=10, random_state=0)
-CLFs = [clf50, clf100, RFclf, GBclf, BGclf]
+CLFs = { 'AdaBoost n=50': clf50, 'AdaBoost n=100': clf100, 'RandomForest': RFclf, 'GradientBoosting': GBclf, 'Bagging': BGclf }
 
 for i, (train_index, test_index) in enumerate(rkf.split(X, y)):
     X_train, X_test = X[train_index], X[test_index]
     y_train, y_test = y[train_index], y[test_index]
-    for j in range(len(CLFs)):
-        CLFs[j].fit(X_train, y_train)
-        prediction = CLFs[j].predict(X_test)
+    j = 0
+    for id, name in enumerate(CLFs):
+        clf = CLFs[name]
+        clf.fit(X_train, y_train)
+        prediction = clf.predict(X_test)
         score[i][j] = accuracy_score(y_test, prediction)
+        j = j + 1
 
 np.save('results.npy', score)
 print(tabulate([['Mean score', '{:.1%}'.format(np.mean(score[:,0])), '{:.1%}'.format(np.mean(score[:,1])), '{:.1%}'.format(np.mean(score[:,2])), '{:.1%}'.format(np.mean(score[:,3])), '{:.1%}'.format(np.mean(score[:,4]))], ['Deviation score', '{:.1%}'.format(np.std(score[:,0])), '{:.1%}'.format(np.std(score[:,1])), '{:.1%}'.format(np.std(score[:,2])), '{:.1%}'.format(np.std(score[:,3])), '{:.1%}'.format(np.std(score[:,4]))]], headers=[' ', 'AdaBoost 50xDecisionTrees', 'AdaBoost 100xDecisionTrees', 'Random Forest', 'GradientBoosting', 'Bagging (with DecisionTrees)']))
+
+
+results = np.load('results.npy')
+# print(results)
+
+
+t = np.zeros((len(CLFs),len(CLFs)))
+p = np.zeros((len(CLFs),len(CLFs)))
+significant = np.zeros((len(CLFs),len(CLFs))).astype(bool)
+advantage = np.zeros((len(CLFs),len(CLFs))).astype(bool)
+
+alpha = 0.05
+
+for i in range(len(CLFs)):
+    for j in range(len(CLFs)):
+        t[i, j], p[i, j] = stats.ttest_rel(results[:, i], results[:, j])
+        if np.mean(results[:, i]) > np.mean(results[:, j]):
+            advantage[i, j] = True
+        if p[i, j] < alpha: 
+            significant[i, j] = True
+
+final = advantage * significant
+
+# print("Statystyka:")
+# print(t)
+# print("P-wartości:")
+# print(p)
+# print("Przewaga:")
+# print(advantage)
+# print("Istotność statycztyczna:")
+# print(significant)
+# print("Końcowa macierz:\n")
+# print(final)
+
+means = np.mean(results, axis=0)
+
+for i in range(len(means)):
+    for j in range(len(means)):
+        if final[i][j]: print(list(CLFs.keys())[i], "with", round(means[i],3), "better than", list(CLFs.keys())[j], "with", round(means[j],3))
+
+
 
 #print('The scikit-learn version is {}.'.format(sklearn.__version__))
